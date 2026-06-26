@@ -1,0 +1,1112 @@
+import { useState, useMemo } from "react";
+import { ShoppingBag, Mic2, Video, Music4, X, Plus, Minus, Trash2, Globe, ChevronRight, Check } from "lucide-react";
+
+/* ===================== CONTENT / I18N ===================== */
+
+const COPY = {
+  fr: {
+    nav: { shop: "Boutique", studio: "Studio", clip: "Tournage", distro: "Distribution", cart: "Panier" },
+    marquee: ["NERVI PROD", "STUDIO", "STYLE", "CLIP", "DISTRIBUTION", "SON"],
+    hero: {
+      eyebrow: "Lifestyle & Production",
+      title: "NERVI PROD",
+      subtitle: "Habille ton style. Enregistre ton son. Tourne ton clip. Diffuse-le partout.",
+      ctaShop: "Voir la boutique",
+      ctaBook: "Réserver le studio",
+    },
+    pillars: [
+      { key: "shop", label: "Boutique", desc: "Vêtements & chaussures" },
+      { key: "studio", label: "Studio", desc: "Séances d'enregistrement" },
+      { key: "clip", label: "Tournage", desc: "Production de clips" },
+      { key: "distro", label: "Distribution", desc: "Sur toutes les plateformes" },
+    ],
+    shop: {
+      title: "Boutique",
+      subtitle: "Vêtements et chaussures NERVI PROD",
+      addToCart: "Ajouter",
+      filters: ["Tout", "Vêtements", "Chaussures"],
+    },
+    studio: {
+      title: "Studio d'enregistrement",
+      subtitle: "Réserve ta séance, choisis ta durée",
+      book: "Réserver cette séance",
+      perHour: "/ heure",
+    },
+    clip: {
+      title: "Tournage de clip",
+      subtitle: "De l'idée au clip fini",
+      book: "Demander un devis",
+    },
+    distro: {
+      title: "Distribution",
+      subtitle: "Ton son sur Spotify, Apple Music, Deezer, YouTube Music et plus",
+      cta: "Soumettre mon son",
+      platforms: ["Spotify", "Apple Music", "Deezer", "YouTube Music", "Boomplay", "Audiomack"],
+    },
+    cart: {
+      title: "Ton panier",
+      empty: "Ton panier est vide.",
+      total: "Total",
+      checkout: "Payer maintenant",
+      remove: "Retirer",
+    },
+    checkout: {
+      title: "Paiement",
+      subtitle: "Choisis ton moyen de paiement",
+      phone: "Numéro de téléphone",
+      pay: "Confirmer le paiement",
+      processing: "Traitement en cours…",
+      success: "Paiement confirmé !",
+      successDesc: "Tu vas recevoir une confirmation par SMS.",
+      close: "Fermer",
+    },
+    bookingModal: {
+      title: "Réservation",
+      date: "Date",
+      time: "Heure",
+      duration: "Durée",
+      name: "Nom complet",
+      phone: "Téléphone",
+      confirm: "Confirmer la réservation",
+    },
+    footer: {
+      tagline: "Style. Son. Image.",
+      contact: "Contact",
+      follow: "Suivre",
+    },
+  },
+  en: {
+    nav: { shop: "Shop", studio: "Studio", clip: "Filming", distro: "Distribution", cart: "Cart" },
+    marquee: ["NERVI PROD", "STUDIO", "STYLE", "CLIP", "DISTRIBUTION", "SOUND"],
+    hero: {
+      eyebrow: "Lifestyle & Production",
+      title: "NERVI PROD",
+      subtitle: "Wear your style. Record your sound. Shoot your clip. Distribute it everywhere.",
+      ctaShop: "Shop now",
+      ctaBook: "Book the studio",
+    },
+    pillars: [
+      { key: "shop", label: "Shop", desc: "Clothes & shoes" },
+      { key: "studio", label: "Studio", desc: "Recording sessions" },
+      { key: "clip", label: "Filming", desc: "Music video production" },
+      { key: "distro", label: "Distribution", desc: "On every platform" },
+    ],
+    shop: {
+      title: "Shop",
+      subtitle: "NERVI PROD clothes and shoes",
+      addToCart: "Add",
+      filters: ["All", "Clothes", "Shoes"],
+    },
+    studio: {
+      title: "Recording studio",
+      subtitle: "Book your session, pick your duration",
+      book: "Book this session",
+      perHour: "/ hour",
+    },
+    clip: {
+      title: "Music video shooting",
+      subtitle: "From idea to finished clip",
+      book: "Request a quote",
+    },
+    distro: {
+      title: "Distribution",
+      subtitle: "Your sound on Spotify, Apple Music, Deezer, YouTube Music and more",
+      cta: "Submit my track",
+      platforms: ["Spotify", "Apple Music", "Deezer", "YouTube Music", "Boomplay", "Audiomack"],
+    },
+    cart: {
+      title: "Your cart",
+      empty: "Your cart is empty.",
+      total: "Total",
+      checkout: "Pay now",
+      remove: "Remove",
+    },
+    checkout: {
+      title: "Payment",
+      subtitle: "Choose your payment method",
+      phone: "Phone number",
+      pay: "Confirm payment",
+      processing: "Processing…",
+      success: "Payment confirmed!",
+      successDesc: "You'll receive a confirmation by SMS.",
+      close: "Close",
+    },
+    bookingModal: {
+      title: "Booking",
+      date: "Date",
+      time: "Time",
+      duration: "Duration",
+      name: "Full name",
+      phone: "Phone",
+      confirm: "Confirm booking",
+    },
+    footer: {
+      tagline: "Style. Sound. Image.",
+      contact: "Contact",
+      follow: "Follow",
+    },
+  },
+};
+
+const PRODUCTS = [
+  { id: "p1", name: "Hoodie NERVI Signature", price: 35000, category: "Vêtements", catEn: "Clothes", img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&q=80" },
+  { id: "p2", name: "T-Shirt NERVI Logo", price: 15000, category: "Vêtements", catEn: "Clothes", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80" },
+  { id: "p3", name: "Cargo Pant Street", price: 28000, category: "Vêtements", catEn: "Clothes", img: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80" },
+  { id: "p4", name: "Sneakers NERVI Run", price: 45000, category: "Chaussures", catEn: "Shoes", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" },
+  { id: "p5", name: "Casquette NERVI", price: 10000, category: "Vêtements", catEn: "Clothes", img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&q=80" },
+  { id: "p6", name: "Bottines Urban", price: 40000, category: "Chaussures", catEn: "Shoes", img: "https://images.unsplash.com/photo-1605408499391-6368c628ef42?w=500&q=80" },
+];
+
+const STUDIO_PACKS = [
+  { id: "s1", name: "Session Standard", hours: 2, price: 20000 },
+  { id: "s2", name: "Session Pro", hours: 4, price: 35000 },
+  { id: "s3", name: "Session Album", hours: 8, price: 60000 },
+];
+
+const CLIP_PACKS = [
+  { id: "c1", name: "Clip Essentiel", desc: "1 lieu, 1 jour de tournage, montage simple" },
+  { id: "c2", name: "Clip Pro", desc: "2 lieux, drone, montage + color grading" },
+  { id: "c3", name: "Clip Premium", desc: "Concept complet, équipe étendue, plusieurs lieux" },
+];
+
+function formatFCFA(n) {
+  return n.toLocaleString("fr-FR") + " FCFA";
+}
+
+/* ===================== MARQUEE ===================== */
+
+function Marquee({ items }) {
+  const loop = [...items, ...items, ...items];
+  return (
+    <div className="marquee-wrap">
+      <div className="marquee-track">
+        {loop.map((t, i) => (
+          <span key={i} className="marquee-item">
+            {t} <span className="marquee-dot">●</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ===================== NAV ===================== */
+
+function Nav({ lang, setLang, t, cartCount, onCartClick, onNav }) {
+  return (
+    <header className="nav">
+      <button className="nav-logo" onClick={() => onNav("home")}>
+        NERVI<span className="nav-logo-accent">PROD</span>
+      </button>
+      <nav className="nav-links">
+        <button onClick={() => onNav("shop")}>{t.nav.shop}</button>
+        <button onClick={() => onNav("studio")}>{t.nav.studio}</button>
+        <button onClick={() => onNav("clip")}>{t.nav.clip}</button>
+        <button onClick={() => onNav("distro")}>{t.nav.distro}</button>
+      </nav>
+      <div className="nav-actions">
+        <button
+          className="lang-toggle"
+          onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+          aria-label="Toggle language"
+        >
+          <Globe size={15} />
+          {lang.toUpperCase()}
+        </button>
+        <button className="cart-btn" onClick={onCartClick} aria-label={t.nav.cart}>
+          <ShoppingBag size={18} />
+          {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/* ===================== HERO ===================== */
+
+function Hero({ t, onNav }) {
+  return (
+    <section className="hero">
+      <div className="hero-eyebrow">{t.hero.eyebrow}</div>
+      <h1 className="hero-title">{t.hero.title}</h1>
+      <p className="hero-subtitle">{t.hero.subtitle}</p>
+      <div className="hero-ctas">
+        <button className="btn btn-primary" onClick={() => onNav("shop")}>
+          {t.hero.ctaShop} <ChevronRight size={16} />
+        </button>
+        <button className="btn btn-outline" onClick={() => onNav("studio")}>
+          {t.hero.ctaBook}
+        </button>
+      </div>
+
+      <div className="pillars">
+        {t.pillars.map((p, i) => {
+          const icons = { shop: ShoppingBag, studio: Mic2, clip: Video, distro: Music4 };
+          const Icon = icons[p.key];
+          return (
+            <button
+              key={p.key}
+              className={`pillar-card pillar-${i}`}
+              onClick={() => onNav(p.key === "shop" ? "shop" : p.key)}
+            >
+              <Icon size={22} />
+              <span className="pillar-label">{p.label}</span>
+              <span className="pillar-desc">{p.desc}</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ===================== SHOP ===================== */
+
+function Shop({ t, lang, onAddToCart }) {
+  const [filter, setFilter] = useState(t.shop.filters[0]);
+
+  const filtered = useMemo(() => {
+    if (filter === t.shop.filters[0]) return PRODUCTS;
+    const cat = lang === "fr" ? filter : filter;
+    return PRODUCTS.filter((p) => (lang === "fr" ? p.category : p.catEn) === cat);
+  }, [filter, lang, t]);
+
+  return (
+    <section className="section" id="shop">
+      <h2 className="section-title">{t.shop.title}</h2>
+      <p className="section-subtitle">{t.shop.subtitle}</p>
+
+      <div className="filters">
+        {t.shop.filters.map((f) => (
+          <button
+            key={f}
+            className={`filter-chip ${filter === f ? "filter-chip-active" : ""}`}
+            onClick={() => setFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div className="product-grid">
+        {filtered.map((p) => (
+          <div key={p.id} className="product-card">
+            <div className="product-img-wrap">
+              <img src={p.img} alt={p.name} className="product-img" loading="lazy" />
+            </div>
+            <div className="product-info">
+              <h3 className="product-name">{p.name}</h3>
+              <p className="product-price">{formatFCFA(p.price)}</p>
+              <button className="btn btn-primary btn-small" onClick={() => onAddToCart(p)}>
+                <Plus size={14} /> {t.shop.addToCart}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ===================== STUDIO ===================== */
+
+function Studio({ t, onBook }) {
+  return (
+    <section className="section" id="studio">
+      <h2 className="section-title">{t.studio.title}</h2>
+      <p className="section-subtitle">{t.studio.subtitle}</p>
+
+      <div className="pack-grid">
+        {STUDIO_PACKS.map((s) => (
+          <div key={s.id} className="pack-card">
+            <Mic2 size={26} className="pack-icon" />
+            <h3 className="pack-name">{s.name}</h3>
+            <p className="pack-meta">{s.hours}h</p>
+            <p className="pack-price">
+              {formatFCFA(s.price)} <span className="pack-perhour">{t.studio.perHour}</span>
+            </p>
+            <button className="btn btn-primary btn-small" onClick={() => onBook({ type: "studio", item: s })}>
+              {t.studio.book}
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ===================== CLIP ===================== */
+
+function Clip({ t, onBook }) {
+  return (
+    <section className="section" id="clip">
+      <h2 className="section-title">{t.clip.title}</h2>
+      <p className="section-subtitle">{t.clip.subtitle}</p>
+
+      <div className="pack-grid">
+        {CLIP_PACKS.map((c) => (
+          <div key={c.id} className="pack-card pack-card-clip">
+            <Video size={26} className="pack-icon" />
+            <h3 className="pack-name">{c.name}</h3>
+            <p className="pack-desc">{c.desc}</p>
+            <button className="btn btn-primary btn-small" onClick={() => onBook({ type: "clip", item: c })}>
+              {t.clip.book}
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ===================== DISTRO ===================== */
+
+function Distro({ t, onBook }) {
+  return (
+    <section className="section" id="distro">
+      <h2 className="section-title">{t.distro.title}</h2>
+      <p className="section-subtitle">{t.distro.subtitle}</p>
+
+      <div className="platform-row">
+        {t.distro.platforms.map((p) => (
+          <span key={p} className="platform-chip">
+            {p}
+          </span>
+        ))}
+      </div>
+
+      <button
+        className="btn btn-primary"
+        style={{ marginTop: "2rem" }}
+        onClick={() => onBook({ type: "distro", item: null })}
+      >
+        <Music4 size={16} /> {t.distro.cta}
+      </button>
+    </section>
+  );
+}
+
+/* ===================== CART DRAWER ===================== */
+
+function CartDrawer({ open, onClose, items, onRemove, onQty, t, lang, onCheckout }) {
+  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  return (
+    <div className={`drawer-overlay ${open ? "drawer-overlay-open" : ""}`} onClick={onClose}>
+      <div className={`drawer ${open ? "drawer-open" : ""}`} onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-header">
+          <h3>{t.cart.title}</h3>
+          <button onClick={onClose} className="icon-btn">
+            <X size={20} />
+          </button>
+        </div>
+
+        {items.length === 0 ? (
+          <p className="drawer-empty">{t.cart.empty}</p>
+        ) : (
+          <>
+            <div className="drawer-items">
+              {items.map((i) => (
+                <div key={i.id} className="drawer-item">
+                  <img src={i.img} alt={i.name} className="drawer-item-img" />
+                  <div className="drawer-item-info">
+                    <p className="drawer-item-name">{i.name}</p>
+                    <p className="drawer-item-price">{formatFCFA(i.price)}</p>
+                    <div className="qty-controls">
+                      <button onClick={() => onQty(i.id, -1)}>
+                        <Minus size={12} />
+                      </button>
+                      <span>{i.qty}</span>
+                      <button onClick={() => onQty(i.id, 1)}>
+                        <Plus size={12} />
+                      </button>
+                      <button className="remove-btn" onClick={() => onRemove(i.id)}>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="drawer-footer">
+              <div className="drawer-total">
+                <span>{t.cart.total}</span>
+                <span>{formatFCFA(total)}</span>
+              </div>
+              <button className="btn btn-primary btn-full" onClick={onCheckout}>
+                {t.cart.checkout}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ===================== BOOKING MODAL ===================== */
+
+function BookingModal({ booking, onClose, t, onConfirm }) {
+  const [form, setForm] = useState({ date: "", time: "", name: "", phone: "" });
+
+  if (!booking) return null;
+
+  const label =
+    booking.type === "studio"
+      ? booking.item.name
+      : booking.type === "clip"
+      ? booking.item.name
+      : t.distro.cta;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{t.bookingModal.title}</h3>
+          <button onClick={onClose} className="icon-btn">
+            <X size={20} />
+          </button>
+        </div>
+        <p className="modal-subtitle">{label}</p>
+
+        <div className="form-grid">
+          <label className="form-field">
+            <span>{t.bookingModal.name}</span>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </label>
+          <label className="form-field">
+            <span>{t.bookingModal.phone}</span>
+            <input
+              type="tel"
+              placeholder="+225 07 00 00 00 00"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
+          </label>
+          {booking.type !== "distro" && (
+            <>
+              <label className="form-field">
+                <span>{t.bookingModal.date}</span>
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>{t.bookingModal.time}</span>
+                <input
+                  type="time"
+                  value={form.time}
+                  onChange={(e) => setForm({ ...form, time: e.target.value })}
+                />
+              </label>
+            </>
+          )}
+        </div>
+
+        <button
+          className="btn btn-primary btn-full"
+          style={{ marginTop: "1.5rem" }}
+          onClick={() => onConfirm(booking, form)}
+        >
+          {t.bookingModal.confirm}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== CHECKOUT MODAL ===================== */
+
+function CheckoutModal({ open, onClose, total, t }) {
+  const [method, setMethod] = useState("airtel");
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | processing | success
+
+  if (!open) return null;
+
+  const handlePay = () => {
+    setStatus("processing");
+    setTimeout(() => setStatus("success"), 1800);
+  };
+
+  const handleClose = () => {
+    setStatus("idle");
+    setPhone("");
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        {status === "success" ? (
+          <div className="success-block">
+            <div className="success-icon">
+              <Check size={28} />
+            </div>
+            <h3>{t.checkout.success}</h3>
+            <p>{t.checkout.successDesc}</p>
+            <button className="btn btn-primary btn-full" onClick={handleClose}>
+              {t.checkout.close}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="modal-header">
+              <h3>{t.checkout.title}</h3>
+              <button onClick={handleClose} className="icon-btn">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="modal-subtitle">{t.checkout.subtitle}</p>
+
+            <div className="payment-methods">
+              <button
+                className={`payment-method ${method === "airtel" ? "payment-method-active" : ""}`}
+                onClick={() => setMethod("airtel")}
+              >
+                <span className="payment-dot payment-dot-airtel" />
+                Airtel Money
+              </button>
+              <button
+                className={`payment-method ${method === "moov" ? "payment-method-active" : ""}`}
+                onClick={() => setMethod("moov")}
+              >
+                <span className="payment-dot payment-dot-moov" />
+                Moov Money
+              </button>
+            </div>
+
+            <label className="form-field" style={{ marginTop: "1.25rem" }}>
+              <span>{t.checkout.phone}</span>
+              <input
+                type="tel"
+                placeholder="+225 07 00 00 00 00"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+
+            <div className="checkout-total">
+              <span>{t.cart.total}</span>
+              <span>{formatFCFA(total)}</span>
+            </div>
+
+            <button
+              className="btn btn-primary btn-full"
+              style={{ marginTop: "1rem" }}
+              onClick={handlePay}
+              disabled={status === "processing"}
+            >
+              {status === "processing" ? t.checkout.processing : t.checkout.pay}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ===================== FOOTER ===================== */
+
+function Footer({ t }) {
+  return (
+    <footer className="footer">
+      <div className="footer-top">
+        <span className="footer-logo">
+          NERVI<span className="nav-logo-accent">PROD</span>
+        </span>
+        <span className="footer-tagline">{t.footer.tagline}</span>
+      </div>
+      <div className="footer-bottom">
+        <span>© 2026 NERVI PROD</span>
+      </div>
+    </footer>
+  );
+}
+
+/* ===================== APP ===================== */
+
+export default function App() {
+  const [lang, setLang] = useState("fr");
+  const t = COPY[lang];
+
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [booking, setBooking] = useState(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((p) => p.id === product.id);
+      if (existing) {
+        return prev.map((p) => (p.id === product.id ? { ...p, qty: p.qty + 1 } : p));
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+    setCartOpen(true);
+  };
+
+  const removeFromCart = (id) => setCart((prev) => prev.filter((p) => p.id !== id));
+
+  const changeQty = (id, delta) => {
+    setCart((prev) =>
+      prev
+        .map((p) => (p.id === id ? { ...p, qty: Math.max(1, p.qty + delta) } : p))
+        .filter((p) => p.qty > 0)
+    );
+  };
+
+  const scrollTo = (id) => {
+    if (id === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleBookingConfirm = (booking, form) => {
+    setBooking(null);
+    // In production: send to backend API here.
+  };
+
+  const cartTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
+
+  return (
+    <div className="app">
+      <style>{CSS}</style>
+
+      <Nav
+        lang={lang}
+        setLang={setLang}
+        t={t}
+        cartCount={cartCount}
+        onCartClick={() => setCartOpen(true)}
+        onNav={scrollTo}
+      />
+
+      <Marquee items={t.marquee} />
+
+      <Hero t={t} onNav={scrollTo} />
+
+      <Marquee items={t.marquee} />
+
+      <Shop t={t} lang={lang} onAddToCart={addToCart} />
+      <Studio t={t} onBook={setBooking} />
+      <Clip t={t} onBook={setBooking} />
+      <Distro t={t} onBook={setBooking} />
+
+      <Footer t={t} />
+
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        items={cart}
+        onRemove={removeFromCart}
+        onQty={changeQty}
+        t={t}
+        lang={lang}
+        onCheckout={() => {
+          setCartOpen(false);
+          setCheckoutOpen(true);
+        }}
+      />
+
+      <BookingModal
+        booking={booking}
+        onClose={() => setBooking(null)}
+        t={t}
+        onConfirm={handleBookingConfirm}
+      />
+
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        total={cartTotal}
+        t={t}
+      />
+    </div>
+  );
+}
+
+/* ===================== CSS ===================== */
+
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #0A0A0A;
+  --fg: #F5F3EF;
+  --accent: #FF4D2E;
+  --accent2: #FFD23F;
+  --card: #161616;
+  --card-border: #2A2A2A;
+  --muted: #9A9A9A;
+}
+
+* { box-sizing: border-box; }
+
+.app {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input { font-family: inherit; }
+
+/* NAV */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  background: rgba(10,10,10,0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--card-border);
+}
+.nav-logo {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+.nav-logo-accent { color: var(--accent); }
+.nav-links { display: none; gap: 1.75rem; font-weight: 600; font-size: 0.92rem; }
+@media (min-width: 800px) { .nav-links { display: flex; } }
+.nav-links button { opacity: 0.85; transition: opacity 0.15s, color 0.15s; }
+.nav-links button:hover { opacity: 1; color: var(--accent); }
+.nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+.lang-toggle {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.78rem; font-weight: 700;
+  border: 1px solid var(--card-border);
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+}
+.cart-btn { position: relative; padding: 0.4rem; }
+.cart-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--accent); color: #0A0A0A;
+  font-size: 0.62rem; font-weight: 800;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* MARQUEE */
+.marquee-wrap {
+  overflow: hidden;
+  background: var(--accent);
+  padding: 0.55rem 0;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+  width: max-content;
+}
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+.marquee-item {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.85rem;
+  color: #0A0A0A;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.marquee-dot { font-size: 0.5rem; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.333%); }
+}
+
+/* HERO */
+.hero {
+  padding: 4.5rem 1.5rem 3rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 1rem;
+}
+.hero-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(3rem, 13vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.25rem;
+  background: linear-gradient(95deg, var(--fg) 40%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 480px;
+  margin: 0 auto 2rem;
+  line-height: 1.5;
+}
+.hero-ctas { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.5rem; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.85rem 1.6rem;
+  font-weight: 700; font-size: 0.92rem;
+  border-radius: 999px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--accent); color: #0A0A0A; }
+.btn-primary:hover { opacity: 0.92; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { border: 1.5px solid var(--card-border); color: var(--fg); }
+.btn-outline:hover { border-color: var(--accent); }
+.btn-small { padding: 0.55rem 1.1rem; font-size: 0.82rem; width: 100%; justify-content: center; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* PILLARS */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+@media (min-width: 700px) { .pillars { grid-template-columns: repeat(4, 1fr); } }
+.pillar-card {
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 18px;
+  padding: 1.4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  text-align: left;
+  transition: transform 0.18s, border-color 0.18s;
+}
+.pillar-card:hover { transform: rotate(0deg) translateY(-3px); border-color: var(--accent); }
+.pillar-0 { transform: rotate(-1.5deg); }
+.pillar-1 { transform: rotate(1deg); }
+.pillar-2 { transform: rotate(-1deg); }
+.pillar-3 { transform: rotate(1.5deg); }
+.pillar-label { font-family: 'Archivo Black', sans-serif; font-size: 1rem; }
+.pillar-desc { font-size: 0.78rem; color: var(--muted); }
+
+/* SECTIONS */
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem;
+  border-top: 1px solid var(--card-border);
+}
+.section-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 0 0 0.5rem;
+}
+.section-subtitle { color: var(--muted); margin: 0 0 2.2rem; font-size: 1rem; }
+
+/* FILTERS */
+.filters { display: flex; gap: 0.6rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.filter-chip {
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.filter-chip-active { background: var(--fg); color: #0A0A0A; border-color: var(--fg); }
+
+/* PRODUCT GRID */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+@media (min-width: 700px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+.product-card {
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.18s;
+}
+.product-card:hover { border-color: var(--accent); }
+.product-img-wrap { aspect-ratio: 1; overflow: hidden; background: #1c1c1c; }
+.product-img { width: 100%; height: 100%; object-fit: cover; }
+.product-info { padding: 1rem; }
+.product-name { font-size: 0.92rem; font-weight: 700; margin: 0 0 0.35rem; }
+.product-price { color: var(--accent2); font-weight: 800; font-size: 0.95rem; margin: 0 0 0.8rem; }
+
+/* PACK GRID */
+.pack-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+}
+@media (min-width: 700px) { .pack-grid { grid-template-columns: repeat(3, 1fr); } }
+.pack-card {
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 18px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.pack-icon { color: var(--accent); margin-bottom: 0.4rem; }
+.pack-name { font-family: 'Archivo Black', sans-serif; font-size: 1.1rem; margin: 0; }
+.pack-meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.pack-desc { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.5rem; line-height: 1.4; }
+.pack-price { font-size: 1.3rem; font-weight: 800; color: var(--accent2); margin: 0.3rem 0 1rem; }
+.pack-perhour { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+/* DISTRO PLATFORMS */
+.platform-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.platform-chip {
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* DRAWER */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+  transition: background 0.25s;
+  z-index: 50;
+}
+.drawer-overlay-open { background: rgba(0,0,0,0.6); pointer-events: auto; }
+.drawer {
+  position: absolute; top: 0; right: 0;
+  width: 100%; max-width: 380px; height: 100%;
+  background: var(--bg);
+  border-left: 1px solid var(--card-border);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex; flex-direction: column;
+}
+.drawer-open { transform: translateX(0); }
+.drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--card-border); }
+.drawer-header h3 { font-family: 'Archivo Black', sans-serif; font-size: 1.1rem; margin: 0; }
+.drawer-empty { padding: 2rem 1.25rem; color: var(--muted); }
+.drawer-items { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.drawer-item { display: flex; gap: 0.8rem; }
+.drawer-item-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; }
+.drawer-item-info { flex: 1; }
+.drawer-item-name { font-size: 0.88rem; font-weight: 700; margin: 0 0 0.2rem; }
+.drawer-item-price { font-size: 0.82rem; color: var(--accent2); margin: 0 0 0.5rem; }
+.qty-controls { display: flex; align-items: center; gap: 0.6rem; }
+.qty-controls button { background: var(--card); border: 1px solid var(--card-border); border-radius: 6px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+.qty-controls span { font-size: 0.85rem; font-weight: 700; min-width: 16px; text-align: center; }
+.remove-btn { margin-left: auto; color: var(--muted); }
+.remove-btn:hover { color: var(--accent); }
+.drawer-footer { padding: 1.25rem; border-top: 1px solid var(--card-border); }
+.drawer-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 60; padding: 1rem;
+}
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  max-width: 420px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+.modal-header h3 { font-family: 'Archivo Black', sans-serif; font-size: 1.1rem; margin: 0; }
+.modal-subtitle { color: var(--muted); font-size: 0.88rem; margin: 0 0 1.25rem; }
+.icon-btn { color: var(--muted); padding: 0.2rem; }
+.icon-btn:hover { color: var(--fg); }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-field { display: flex; flex-direction: column; gap: 0.4rem; grid-column: span 2; }
+.form-field:nth-of-type(3), .form-field:nth-of-type(4) { grid-column: span 1; }
+.form-field span { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+.form-field input {
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+.form-field input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
+.payment-methods { display: flex; flex-direction: column; gap: 0.6rem; }
+.payment-method {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.payment-method-active { border-color: var(--accent); background: rgba(255,77,46,0.08); }
+.payment-dot { width: 10px; height: 10px; border-radius: 50%; }
+.payment-dot-airtel { background: #FF0000; }
+.payment-dot-moov { background: #0066CC; }
+
+.checkout-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.15rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--card-border); }
+
+.success-block { text-align: center; padding: 1.5rem 0.5rem; }
+.success-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.25rem;
+  color: #0A0A0A;
+}
+.success-block h3 { font-family: 'Archivo Black', sans-serif; font-size: 1.2rem; margin: 0 0 0.5rem; }
+.success-block p { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid var(--card-border);
+  padding: 3rem 1.5rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.footer-top { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+.footer-logo { font-family: 'Archivo Black', sans-serif; font-size: 1.3rem; }
+.footer-tagline { color: var(--muted); font-size: 0.9rem; }
+.footer-bottom { color: var(--muted); font-size: 0.78rem; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
+`;
